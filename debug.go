@@ -55,4 +55,3 @@ func (d *DebugHandler) SetRequest(b []byte) {
 func (d *DebugHandler) SetResponse(b []byte) {
 	d.responseData = b
 }
-

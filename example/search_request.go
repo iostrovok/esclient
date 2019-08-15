@@ -15,7 +15,6 @@ import (
 var url, index, typeDoc, reqVal string
 var sortField, reqField string
 
-
 var countGoroutine int = 10
 var printLock sync.RWMutex
 
@@ -62,7 +61,7 @@ func runID(i int, wg *sync.WaitGroup, client esclient.IESClient) {
 
 	q := elastic.NewMatchQuery(reqField, reqVal)
 	sortBy := elastic.SortInfo{
-		Field:    sortField,
+		Field:     sortField,
 		Ascending: true,
 	}
 	searchResult, err := cl.Get().Search().
@@ -89,11 +88,12 @@ func runID(i int, wg *sync.WaitGroup, client esclient.IESClient) {
 		log.Println(cl.GetError().Error(), "; ", cl.GetError().Reason(), ";", cl.GetError().Type())
 	}
 
+	log.Println(">>>>>>>>>>>>>>>>>>>\n", string(cl.GetDebug().Request()), "<<<<<<<<<<<<<<<<<<<<")
+
 	if err != nil {
 		log.Println(err)
 		return
 	}
-
 
 	for _, hit := range searchResult.Hits.Hits {
 		one := map[string]interface{}{}
@@ -104,7 +104,6 @@ func runID(i int, wg *sync.WaitGroup, client esclient.IESClient) {
 
 		log.Println(one)
 	}
-
 
 	log.Println("Finished succeeded")
 }

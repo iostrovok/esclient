@@ -46,10 +46,16 @@ func (o oneClient) Get() *elastic.Client {
 }
 
 func (o *oneClient) GetDebug() IDebug {
+	if o.debugObject == nil {
+		return NeWDebugHandler()
+	}
 	return o.debugObject
 }
 
 func (o *oneClient) GetError() IError {
+	if o.errorObject == nil {
+		return NewErrorHandler()
+	}
 	return o.errorObject
 }
 
