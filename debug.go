@@ -1,5 +1,10 @@
 package esclient
 
+import (
+	"net/http"
+	"net/http/httputil"
+)
+
 type DebugHandler struct {
 	requestData  []byte
 	responseData []byte
@@ -52,4 +57,20 @@ func (d *DebugHandler) SetRequest(b []byte) {
 func (d *DebugHandler) SetResponse(b []byte) {
 	d.responseData = b
 	d.wasUpdated = true
+}
+
+func (d *DebugHandler) SetHttpRequest(req *http.Request) {
+	if req != nil {
+		if body, err := httputil.DumpRequestOut(req, true); err == nil {
+			d.SetRequest(body)
+		}
+	}
+}
+
+func (d *DebugHandler) SetHttpResponse(resp *http.Response, err error) {
+	if resp != nil {
+		if body, errParsing := httputil.DumpResponse(resp, true); errParsing == nil {
+			d.SetResponse(body)
+		}
+	}
 }

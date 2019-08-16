@@ -30,8 +30,8 @@ type IDebug interface {
 	All() map[string]interface{}
 
 	// internal functions
-	SetRequest(body []byte)
-	SetResponse(body []byte)
+	SetHttpRequest(req *http.Request)
+	SetHttpResponse(*http.Response,  error)
 }
 
 type IError interface {

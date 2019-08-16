@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"net/http"
+	"net/http/httputil"
 )
 
 type ErrorHandler struct {
@@ -62,6 +63,9 @@ func (e *ErrorHandler) PasredError() *FullError {
 func (e *ErrorHandler) SetHttpResponse(resp *http.Response, err error) {
 	if resp != nil {
 		e.httpStatusCode = resp.StatusCode
+		if body, errParsing := httputil.DumpResponse(resp, true); errParsing == nil {
+			e.SetHttpBody(body)
+		}
 	}
 	e.httpError = err
 	e.wasUpdated = true

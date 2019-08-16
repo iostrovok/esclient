@@ -2,7 +2,6 @@ package esclient
 
 import (
 	"net/http"
-	"net/http/httputil"
 )
 
 type ReqHandler func(*http.Request)
@@ -26,9 +25,7 @@ func MakeReqFunc(t Type, debugObject *DebugHandler) ReqHandler {
 	}
 
 	return func(req *http.Request) {
-		if body, err := httputil.DumpRequestOut(req, true); err == nil {
-			debugObject.SetRequest(body)
-		}
+		debugObject.SetHttpRequest(req)
 	}
 }
 
@@ -40,36 +37,22 @@ func MakeResFunc(t Type, errObject *ErrorHandler, debugObject *DebugHandler) Res
 
 	if t == Debug {
 		return func(resp *http.Response, err error) (*http.Response, error) {
-
-			if body, errParsing := httputil.DumpResponse(resp, true); errParsing == nil {
-				debugObject.SetResponse(body)
-			}
-
+			debugObject.SetHttpResponse(resp, err)
 			return resp, err
 		}
 	}
 
 	if t == Error {
 		return func(resp *http.Response, err error) (*http.Response, error) {
-
 			errObject.SetHttpResponse(resp, err)
-			if body, errParsing := httputil.DumpResponse(resp, true); errParsing == nil {
-				errObject.SetHttpBody(body)
-			}
-
 			return resp, err
 		}
 	}
 
 	if t == ErrorAndDebug {
 		return func(resp *http.Response, err error) (*http.Response, error) {
-
 			errObject.SetHttpResponse(resp, err)
-			if body, errParsing := httputil.DumpResponse(resp, true); errParsing == nil {
-				errObject.SetHttpBody(body)
-				debugObject.SetResponse(body)
-			}
-
+			debugObject.SetHttpResponse(resp, err)
 			return resp, err
 		}
 	}
