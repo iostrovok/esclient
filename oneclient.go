@@ -27,10 +27,10 @@ type oneClient struct {
 func newOneClient(client *elastic.Client, errObj IError, debObj IDebug) *oneClient {
 
 	if errObj == nil {
-		errObj = &ErrorHandler{}
+		errObj = NewErrorHandler()
 	}
 	if errObj == nil {
-		debObj = &DebugHandler{}
+		debObj = NeWDebugHandler()
 	}
 
 	return &oneClient{

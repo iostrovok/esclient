@@ -116,7 +116,7 @@ func (c *Client) Open(options ...Type) IClient {
 	}
 
 	if t == None {
-		return c.simplesClient
+		return newOneClient(c.simplesClient.Get(), nil, nil)
 	}
 
 	if cl, find := c.findFree(t); find {
