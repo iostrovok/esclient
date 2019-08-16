@@ -3,6 +3,7 @@ package esclient
 import (
 	"bytes"
 	"encoding/json"
+	"net/http"
 )
 
 type ErrorHandler struct {
@@ -58,16 +59,12 @@ func (e *ErrorHandler) PasredError() *FullError {
 
 // <<<<<<<<<< Interface function
 
-func (e *ErrorHandler) Update() {
-	e.wasUpdated = true
-}
-
-func (e *ErrorHandler) SetHttpStatusCode(code int) {
-	e.httpStatusCode = code
-}
-
-func (e *ErrorHandler) SetHttpError(err error) {
+func (e *ErrorHandler) SetHttpResponse(resp *http.Response, err error) {
+	if resp != nil {
+		e.httpStatusCode = resp.StatusCode
+	}
 	e.httpError = err
+	e.wasUpdated = true
 }
 
 func (e *ErrorHandler) SetHttpBody(body []byte) {
@@ -79,6 +76,7 @@ func (e *ErrorHandler) SetHttpBody(body []byte) {
 	}
 
 	e.parseBody(bodyParts[1])
+	e.wasUpdated = true
 }
 
 func (e *ErrorHandler) parseBody(body []byte) {

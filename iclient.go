@@ -2,6 +2,7 @@ package esclient
 
 import (
 	"github.com/olivere/elastic"
+	"net/http"
 )
 
 type Type int
@@ -31,7 +32,6 @@ type IDebug interface {
 	// internal functions
 	SetRequest(body []byte)
 	SetResponse(body []byte)
-	Update()
 }
 
 type IError interface {
@@ -61,9 +61,7 @@ type IError interface {
 	WasUpdated() bool
 
 	// internal functions
-	Update()
-	SetHttpError(error)
-	SetHttpStatusCode(int)
+	SetHttpResponse(*http.Response,  error)
 	SetHttpBody([]byte)
 }
 

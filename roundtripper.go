@@ -40,11 +40,10 @@ func MakeResFunc(t Type, errObject *ErrorHandler, debugObject *DebugHandler) Res
 
 	if t == Debug {
 		return func(resp *http.Response, err error) (*http.Response, error) {
+
 			if body, errParsing := httputil.DumpResponse(resp, true); errParsing == nil {
 				debugObject.SetResponse(body)
 			}
-
-			debugObject.Update()
 
 			return resp, err
 		}
@@ -53,13 +52,10 @@ func MakeResFunc(t Type, errObject *ErrorHandler, debugObject *DebugHandler) Res
 	if t == Error {
 		return func(resp *http.Response, err error) (*http.Response, error) {
 
-			errObject.SetHttpError(err)
-			errObject.SetHttpStatusCode(resp.StatusCode)
+			errObject.SetHttpResponse(resp, err)
 			if body, errParsing := httputil.DumpResponse(resp, true); errParsing == nil {
 				errObject.SetHttpBody(body)
 			}
-
-			errObject.Update()
 
 			return resp, err
 		}
@@ -68,15 +64,11 @@ func MakeResFunc(t Type, errObject *ErrorHandler, debugObject *DebugHandler) Res
 	if t == ErrorAndDebug {
 		return func(resp *http.Response, err error) (*http.Response, error) {
 
-			errObject.SetHttpError(err)
-			errObject.SetHttpStatusCode(resp.StatusCode)
+			errObject.SetHttpResponse(resp, err)
 			if body, errParsing := httputil.DumpResponse(resp, true); errParsing == nil {
 				errObject.SetHttpBody(body)
 				debugObject.SetResponse(body)
 			}
-
-			errObject.Update()
-			debugObject.Update()
 
 			return resp, err
 		}

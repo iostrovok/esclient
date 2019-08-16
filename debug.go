@@ -44,14 +44,12 @@ func (d *DebugHandler) WasUpdated() bool {
 	return d.wasUpdated
 }
 
-func (d *DebugHandler) Update() {
-	d.wasUpdated = true
-}
-
 func (d *DebugHandler) SetRequest(b []byte) {
 	d.requestData = b
+	d.wasUpdated = true
 }
 
 func (d *DebugHandler) SetResponse(b []byte) {
 	d.responseData = b
+	d.wasUpdated = true
 }
