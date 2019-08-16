@@ -1,6 +1,7 @@
 package esclient
 
 import (
+	"github.com/olivere/elastic"
 	"net/http"
 	"regexp"
 	"testing"
@@ -46,4 +47,24 @@ func (s *testSuite) TestErrorHandler_NoMappingFound(c *C) {
 	c.Assert(errObject.Status(), Equals, 400)
 	c.Assert(errObject.Code(), Equals, Internal)
 	c.Assert(errObject.Type(), Equals, "query_shard_exception")
+}
+
+// TestErrorHandler_NoSuchIndex
+func (s *testSuite) TestErrorHandler_ConnectionError(c *C) {
+
+	testClient, err := NewClient(elastic.SetURL("bla-bla-bla"))
+	c.Assert(err, NotNil)
+	c.Assert(testClient, NotNil)
+
+	cl := testClient.Open(ErrorAndDebug)
+	c.Assert(cl.ConnError(), NotNil)
+
+	cl = testClient.Open(Debug)
+	c.Assert(cl.ConnError(), NotNil)
+
+	cl = testClient.Open(Error)
+	c.Assert(cl.ConnError(), NotNil)
+
+	cl = testClient.Open(None)
+	c.Assert(cl.ConnError(), NotNil)
 }

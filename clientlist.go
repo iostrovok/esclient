@@ -22,8 +22,10 @@ func (cl *ClientList) appendTo(o *oneClient) {
 	cl.mu.Lock()
 	defer cl.mu.Unlock()
 
-	cl.clientList = append(cl.clientList, o)
-	cl.total = len(cl.clientList)
+	if o.ConnError() == nil {
+		cl.clientList = append(cl.clientList, o)
+		cl.total = len(cl.clientList)
+	}
 }
 
 func (cl *ClientList) findFree() (IClient, bool) {
@@ -33,7 +35,18 @@ func (cl *ClientList) findFree() (IClient, bool) {
 
 	for i := range cl.clientList {
 
-		o := cl.clientList[(i+cl.lastI)%cl.total]
+		j := (i + cl.lastI) % cl.total
+
+		o := cl.clientList[j]
+
+		if o.ConnError() != nil {
+			if len(cl.clientList) > j {
+				cl.clientList = append(cl.clientList[:j], cl.clientList[j+1:]...)
+				cl.total = len(cl.clientList)
+				cl.lastI--
+			}
+			continue
+		}
 
 		if !o.isLock() {
 			cl.lastI = i + 1

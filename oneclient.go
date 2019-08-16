@@ -20,11 +20,13 @@ type oneClient struct {
 
 	client *elastic.Client
 
+	connectionError error
+
 	errorObject IError
 	debugObject IDebug
 }
 
-func newOneClient(client *elastic.Client, errObj IError, debObj IDebug) *oneClient {
+func newOneClient(client *elastic.Client, connectionError error, errObj IError, debObj IDebug) *oneClient {
 
 	if errObj == nil {
 		errObj = NewErrorHandler()
@@ -34,7 +36,8 @@ func newOneClient(client *elastic.Client, errObj IError, debObj IDebug) *oneClie
 	}
 
 	return &oneClient{
-		client: client,
+		client:          client,
+		connectionError: connectionError,
 
 		errorObject: errObj,
 		debugObject: debObj,
@@ -43,6 +46,10 @@ func newOneClient(client *elastic.Client, errObj IError, debObj IDebug) *oneClie
 
 func (o oneClient) Get() *elastic.Client {
 	return o.client
+}
+
+func (o oneClient) ConnError() error {
+	return o.connectionError
 }
 
 func (o *oneClient) GetDebug() IDebug {

@@ -20,14 +20,13 @@ const (
 type Client struct {
 	mu sync.RWMutex
 
-	cfg            *config.Config
+	// configuration for (re)connection
 	connectionType ConnectionType
+	cfg            *config.Config
+	options        []elastic.ClientOptionFunc
 
-	options []elastic.ClientOptionFunc
-	ctx     context.Context
-
-	simplesClient *oneClient
-	oneClientList map[Type]*ClientList
+	simpleElasticClient *elastic.Client
+	oneClientList       map[Type]*ClientList
 }
 
 /*
@@ -40,56 +39,35 @@ Wrappers over github.com/olivere/elastic functions:
 */
 
 func DialWithConfig(ctx context.Context, cfg *config.Config) (IESClient, error) {
-	c, err := elastic.DialWithConfig(ctx, cfg)
-	if err != nil {
-		return nil, err
-	}
-
-	out := initNewClient(DialType, c, []elastic.ClientOptionFunc{}, cfg)
-	return out, nil
+	return initNewClient(DialType, []elastic.ClientOptionFunc{}, cfg)
 }
 
 func Dial(options ...elastic.ClientOptionFunc) (IESClient, error) {
-	c, err := elastic.Dial(options...)
-	if err != nil {
-		return nil, err
-	}
-
-	out := initNewClient(DialType, c, options, nil)
-	return out, nil
+	return initNewClient(DialType, options, nil)
 }
 
 func DialContext(ctx context.Context, options ...elastic.ClientOptionFunc) (IESClient, error) {
-	c, err := elastic.NewClient(options...)
-	if err != nil {
-		return nil, err
-	}
-
-	out := initNewClient(DialType, c, options, nil)
-	return out, nil
+	return initNewClient(DialType, options, nil)
 }
 
 func NewClient(options ...elastic.ClientOptionFunc) (IESClient, error) {
-	c, err := elastic.NewClient(options...)
-	if err != nil {
-		return nil, err
-	}
-
-	out := initNewClient(ClientType, c, options, nil)
-	return out, nil
+	return initNewClient(ClientType, options, nil)
 }
 
 func NewSimpleClient(options ...elastic.ClientOptionFunc) (IESClient, error) {
-	c, err := elastic.NewSimpleClient(options...)
-	if err != nil {
-		return nil, err
-	}
-
-	out := initNewClient(SimpleType, c, options, nil)
-	return out, nil
+	return initNewClient(SimpleType, options, nil)
 }
 
-func initNewClient(connectionType ConnectionType, elasticClient *elastic.Client, options []elastic.ClientOptionFunc, cfg *config.Config) *Client {
+func initNewClient(connectionType ConnectionType, options []elastic.ClientOptionFunc, cfg *config.Config) (*Client, error) {
+
+	var es *elastic.Client
+	var err error
+	switch connectionType {
+	case DialType, ClientType:
+		es, err = elastic.DialContext(context.Background(), options...)
+	case SimpleType:
+		es, err = elastic.NewSimpleClient(options...)
+	}
 
 	oneClientList := map[Type]*ClientList{
 		Error:         NewClientList(),
@@ -102,10 +80,9 @@ func initNewClient(connectionType ConnectionType, elasticClient *elastic.Client,
 		options:        options,
 		cfg:            cfg,
 
-		simplesClient: newOneClient(elasticClient, nil, nil),
-		oneClientList: oneClientList,
-	}
-
+		simpleElasticClient: es,
+		oneClientList:       oneClientList,
+	}, err
 }
 
 func (c *Client) Open(options ...Type) IClient {
@@ -115,14 +92,25 @@ func (c *Client) Open(options ...Type) IClient {
 		t = options[0]
 	}
 
-	if t == None {
-		return newOneClient(c.simplesClient.Get(), nil, nil)
+	if t == None && c.simpleElasticClient != nil {
+		// It just returns wrapper over elasticsearch client
+		c.mu.RLock()
+		defer c.mu.RUnlock()
+		return newOneClient(c.simpleElasticClient, nil, nil, nil)
+	} else if c.simpleElasticClient == nil {
+		c.mu.Lock()
+		defer c.mu.Unlock()
+		var err error
+		c.simpleElasticClient, err = elastic.NewSimpleClient(c.options...)
+		return newOneClient(c.simpleElasticClient, err, nil, nil)
 	}
 
+	// Reusing connection
 	if cl, find := c.findFree(t); find {
 		return cl
 	}
 
+	// Creates new connection to elasticsearch
 	return c.addNewClient(t).lock()
 }
 
@@ -140,7 +128,6 @@ func (c *Client) appendOneClient(t Type, o *oneClient) *oneClient {
 	defer c.mu.RUnlock()
 
 	c.oneClientList[t].appendTo(o)
-
 	return o
 }
 
@@ -149,8 +136,8 @@ func (c *Client) addNewClient(t Type) *oneClient {
 
 	// DialWithConfig does not support option SetHttpClient
 	if c.connectionType == ConfigType {
-		es, _ := elastic.DialWithConfig(context.Background(), c.cfg)
-		cl := newOneClient(es, nil, nil)
+		es, err := elastic.DialWithConfig(context.Background(), c.cfg)
+		cl := newOneClient(es, err, nil, nil)
 		return c.appendOneClient(t, cl)
 	}
 
@@ -158,13 +145,14 @@ func (c *Client) addNewClient(t Type) *oneClient {
 	options := append(c.options, elastic.SetHttpClient(httpClient))
 
 	var es *elastic.Client
+	var err error
 	switch c.connectionType {
 	case DialType, ClientType:
-		es, _ = elastic.DialContext(context.Background(), options...)
+		es, err = elastic.DialContext(context.Background(), options...)
 	case SimpleType:
-		es, _ = elastic.NewSimpleClient(options...)
+		es, err = elastic.NewSimpleClient(options...)
 	}
 
-	cl := newOneClient(es, errObject, debugObject)
+	cl := newOneClient(es, err, errObject, debugObject)
 	return c.appendOneClient(t, cl)
 }

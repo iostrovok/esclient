@@ -72,6 +72,7 @@ type IESClient interface {
 type IClient interface {
 	Get() *elastic.Client
 	Close()
+	ConnError() error // connection error
 	GetDebug() IDebug
 	GetError() IError
 }
