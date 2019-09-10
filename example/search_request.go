@@ -7,7 +7,7 @@ import (
 	"log"
 	"sync"
 
-	"github.com/olivere/elastic"
+	elastic "github.com/olivere/elastic/v7"
 
 	"github.com/iostrovok/esclient"
 )
