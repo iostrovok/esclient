@@ -7,9 +7,8 @@ import (
 	"log"
 	"sync"
 
-	elastic "github.com/olivere/elastic/v7"
-
 	"github.com/iostrovok/esclient"
+	"github.com/olivere/elastic/v7"
 )
 
 var url, index, typeDoc, reqVal string
@@ -79,7 +78,7 @@ func runID(i int, wg *sync.WaitGroup, client esclient.IConn) {
 	log.Printf("Debug.Request ===> \n%s\n", cl.Debug().Request())
 	log.Printf("Debug.Response ===> \n%s\n", cl.Debug().Response())
 	log.Printf("----------------------\n")
-	
+
 	if err != nil {
 		log.Println(err)
 		return

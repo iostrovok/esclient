@@ -3,7 +3,7 @@ package esclient
 import (
 	"context"
 
-	elastic "github.com/olivere/elastic/v7"
+	"github.com/olivere/elastic/v7"
 )
 
 type IDebug interface {

@@ -6,9 +6,8 @@ import (
 	"log"
 	"sync"
 
-	"github.com/olivere/elastic"
-
 	"github.com/iostrovok/esclient"
+	"github.com/olivere/elastic/v7"
 )
 
 var url, index, typeDoc, reqVal string

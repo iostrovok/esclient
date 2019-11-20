@@ -1,10 +1,10 @@
 package esclient
 
 import (
-	elastic "github.com/olivere/elastic/v7"
 	"testing"
 
-	. "gopkg.in/check.v1"
+	 "github.com/olivere/elastic/v7"
+	. "github.com/iostrovok/check"
 )
 
 type testSuite struct{}
