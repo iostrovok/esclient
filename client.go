@@ -76,7 +76,6 @@ func (c *conn) newDebugClient(ctxs ...context.Context) IClient {
 		elastic.SetHttpClient(httpClient),
 		elastic.SetSniff(false),
 		elastic.SetHealthcheck(false),
-		elastic.SetMaxRetries(1),
 		elastic.SetHealthcheckTimeoutStartup(0),
 	)
 
