@@ -86,11 +86,8 @@ func (c *conn) newDebugClient(ctxs ...context.Context) IClient {
 	case ClientType:
 		es, err = elastic.NewClient(options...)
 	case DialContextType:
-		if len(ctxs) > 0 {
-			es, err = elastic.DialContext(ctxs[0], options...)
-		} else {
-			es, err = elastic.DialContext(context.Background(), options...)
-		}
+		ctxs = append(ctxs, context.Background())
+		es, err = elastic.DialContext(ctxs[0], options...)
 	case DialType:
 		es, err = elastic.Dial(options...)
 	case SimpleType:
