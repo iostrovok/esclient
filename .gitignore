@@ -45,5 +45,8 @@ _testmain.go
 /go.sum
 /spec
 /tmp
+/vendor
+/bin
 /test
 /CHANGELOG-3.0.html
+/coverage.html
