@@ -10,12 +10,15 @@ install: clean mod
 
 test-cover:
 	rm -f coverage.out
-	$(DIR) $(GODEBUG) go test -coverprofile=coverage.out  --check.format=teamcity -cover -race ./
+	$(DIR) $(GODEBUG) go test -coverprofile=coverage.out -cover -race ./
 	go tool cover -html=coverage.out -o coverage.html
 	rm coverage.out
 
+test-tc:
+	$(DIR) $(GODEBUG) go test --check.format=teamcity -race ./
+
 test:
-	$(DIR) $(GODEBUG) go test -coverprofile=coverage.out -cover -race ./
+	$(DIR) $(GODEBUG) go test -cover -race ./
 
 clean:
 	rm -f coverage.out
