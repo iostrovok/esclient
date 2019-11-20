@@ -3,8 +3,8 @@ package esclient
 import (
 	"testing"
 
-	 "github.com/olivere/elastic/v7"
 	. "github.com/iostrovok/check"
+	"github.com/olivere/elastic/v7"
 )
 
 type testSuite struct{}
