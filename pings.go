@@ -88,19 +88,18 @@ func (c *conn) SniffTimeout(duration time.Duration) {
 	c.sniffDuration = duration
 }
 
-func (c *conn) setPingService() {
-	c.mc.Lock()
-	defer c.mc.Unlock()
+func (c *conn) Sniff(ctx context.Context) {
+
+	if c.firstElasticClient == nil {
+		return
+	}
 
 	c.pingService = make([]*elastic.PingService, 0)
 	urls := extractURLs(c.firstElasticClient.String())
 	for _, url := range urls {
 		c.pingService = append(c.pingService, c.firstElasticClient.Ping(url))
 	}
-}
 
-func (c *conn) Sniff(ctx context.Context) {
-	c.setPingService()
 	go c.run(ctx)
 }
 

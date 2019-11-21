@@ -36,7 +36,6 @@ func insertRecord(c *C, id, record string) {
 	req.Header.Add("Content-Type", "application/json")
 	_, err = client.Do(req)
 	c.Assert(err, IsNil)
-
 }
 
 //Run once when the suite starts running.
@@ -79,14 +78,14 @@ func (s *testSuite) TearDownTest(c *C) {}
 
 //Run once after all tests or benchmarks have finished running.
 func (s *testSuite) TearDownSuite(c *C) {
-	//client := &http.Client{}
-	//
-	//req, err := http.NewRequest("DELETE", testURL+"/"+testIndex, strings.NewReader(testDeleteMappings))
-	//c.Assert(err, IsNil)
-	//
-	//req.Header.Add("Content-Type", "application/json")
-	//_, err = client.Do(req)
-	//c.Assert(err, IsNil)
+	client := &http.Client{}
+
+	req, err := http.NewRequest("DELETE", testURL+"/"+testIndex, strings.NewReader(testDeleteMappings))
+	c.Assert(err, IsNil)
+
+	req.Header.Add("Content-Type", "application/json")
+	_, err = client.Do(req)
+	c.Assert(err, IsNil)
 }
 
 //// TestErrorHandler_NoSuchIndex
