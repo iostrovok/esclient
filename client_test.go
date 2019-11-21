@@ -11,7 +11,7 @@ import (
 )
 
 const (
-	testURL = "http://127.0.0.1:9200"
+	testURL            = "http://127.0.0.1:9200"
 	testIndex          = "my_test_index_123"
 	testMappings       = `{"mappings": {"dynamic": true}}`
 	testDeleteMappings = `{"query": {"match_all":}}`
