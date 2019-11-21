@@ -6,5 +6,5 @@ require (
 	github.com/iostrovok/check v0.0.4
 	github.com/kr/pretty v0.1.0 // indirect
 	github.com/olivere/elastic/v7 v7.0.9
-	github.com/sirupsen/logrus v1.2.0
+	github.com/sirupsen/logrus v1.4.2
 )
