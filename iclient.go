@@ -2,9 +2,16 @@ package esclient
 
 import (
 	"context"
+	"time"
 
 	"github.com/olivere/elastic/v7"
 )
+
+type ILogger interface {
+	Fatal(v ...interface{})
+	Print(v ...interface{})
+	Printf(format string, v ...interface{})
+}
 
 type IDebug interface {
 	// Request() returns full http request
@@ -16,6 +23,12 @@ type IDebug interface {
 
 type IConn interface {
 	Open(bool, ...context.Context) IClient
+	Sniff(context.Context)
+	SetLogger(ILogger)
+	SniffTimeout(time.Duration)
+
+	// internal
+	reConnect() error
 }
 
 type IClient interface {

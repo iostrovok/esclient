@@ -2,7 +2,6 @@ package esclient
 
 import (
 	"context"
-
 	"github.com/olivere/elastic/v7"
 )
 
@@ -15,23 +14,6 @@ const (
 	ClientType
 )
 
-type conn struct {
-	// configuration for (re)connection
-	connectionType     ConnectionType
-	options            []elastic.ClientOptionFunc
-	firstElasticClient *elastic.Client
-	connectionError    error
-}
-
-func newConn(c ConnectionType, options []elastic.ClientOptionFunc, es *elastic.Client, err error) *conn {
-	return &conn{
-		connectionType:     c,
-		options:            options,
-		firstElasticClient: es,
-		connectionError:    err,
-	}
-}
-
 /*
 Wrappers over github.com/olivere/elastic functions:
 	- Dial(...)
@@ -42,22 +24,22 @@ Wrappers over github.com/olivere/elastic functions:
 
 func Dial(options ...elastic.ClientOptionFunc) (IConn, error) {
 	es, err := elastic.Dial(options...)
-	return newConn(DialType, options, es, err), err
+	return newConn(DialType, options, es, err, context.Background()), err
 }
 
 func DialContext(ctx context.Context, options ...elastic.ClientOptionFunc) (IConn, error) {
 	es, err := elastic.DialContext(ctx, options...)
-	return newConn(DialContextType, options, es, err), err
+	return newConn(DialContextType, options, es, err, ctx), err
 }
 
 func NewClient(options ...elastic.ClientOptionFunc) (IConn, error) {
 	es, err := elastic.NewClient(options...)
-	return newConn(ClientType, options, es, err), err
+	return newConn(ClientType, options, es, err, context.Background()), err
 }
 
 func NewSimpleClient(options ...elastic.ClientOptionFunc) (IConn, error) {
 	es, err := elastic.NewSimpleClient(options...)
-	return newConn(SimpleType, options, es, err), err
+	return newConn(SimpleType, options, es, err, context.Background()), err
 }
 
 func (c *conn) Open(useDebug bool, ctxs ...context.Context) IClient {

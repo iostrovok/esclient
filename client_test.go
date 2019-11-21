@@ -17,6 +17,8 @@ const (
 	testDeleteMappings = `{"query": {"match_all":}}`
 )
 
+var options []elastic.ClientOptionFunc
+
 type testSuite struct{}
 
 var _ = Suite(&testSuite{})
@@ -34,7 +36,6 @@ func insertRecord(c *C, id, record string) {
 	req.Header.Add("Content-Type", "application/json")
 	_, err = client.Do(req)
 	c.Assert(err, IsNil)
-
 }
 
 //Run once when the suite starts running.
@@ -61,6 +62,12 @@ func (s *testSuite) SetUpSuite(c *C) {
 		"message" : "bolik - trying out Elasticsearch"
 	}`
 	insertRecord(c, "two", record)
+
+	options = []elastic.ClientOptionFunc{
+		elastic.SetURL(testURL),
+		elastic.SetSniff(false),
+		elastic.SetHealthcheck(false),
+	}
 }
 
 //Run before each test or benchmark starts running.
@@ -71,36 +78,36 @@ func (s *testSuite) TearDownTest(c *C) {}
 
 //Run once after all tests or benchmarks have finished running.
 func (s *testSuite) TearDownSuite(c *C) {
-	//client := &http.Client{}
-	//
-	//req, err := http.NewRequest("DELETE", testURL+"/"+testIndex, strings.NewReader(testDeleteMappings))
-	//c.Assert(err, IsNil)
-	//
-	//req.Header.Add("Content-Type", "application/json")
-	//_, err = client.Do(req)
-	//c.Assert(err, IsNil)
+	client := &http.Client{}
+
+	req, err := http.NewRequest("DELETE", testURL+"/"+testIndex, strings.NewReader(testDeleteMappings))
+	c.Assert(err, IsNil)
+
+	req.Header.Add("Content-Type", "application/json")
+	_, err = client.Do(req)
+	c.Assert(err, IsNil)
 }
 
 //// TestErrorHandler_NoSuchIndex
-func (s *testSuite) TestErrorHandler_ConnectionError(c *C) {
+func (s *testSuite) TestConnectionError(c *C) {
 
-	testClient, err := NewClient(elastic.SetURL("bla-bla-bla"))
+	connection, err := NewClient(elastic.SetURL("bla-bla-bla"))
 	c.Assert(err, NotNil)
-	c.Assert(testClient, NotNil)
+	c.Assert(connection, NotNil)
 
-	cl := testClient.Open(true)
+	cl := connection.Open(true)
 	c.Assert(cl.Error(), NotNil)
 
-	cl = testClient.Open(false)
+	cl = connection.Open(false)
 	c.Assert(cl.Error(), NotNil)
 }
 
-func (s *testSuite) TestClient_DebugTrue_1(c *C) {
+func (s *testSuite) TestClientDebug_1(c *C) {
 
-	// Create an Elasticsearch client
-	client, err := NewSimpleClient(elastic.SetURL(testURL))
+	// Create an Elasticsearch connection
+	connection, err := NewSimpleClient(options...)
 	c.Assert(err, IsNil)
-	cl := client.Open(true)
+	cl := connection.Open(true)
 
 	result, err := cl.Get().Get().
 		Index(testIndex).
@@ -111,12 +118,12 @@ func (s *testSuite) TestClient_DebugTrue_1(c *C) {
 	c.Assert(result.Id, Equals, "one")
 }
 
-func (s *testSuite) TestClient_DebugTrue_2(c *C) {
+func (s *testSuite) TestClientDebug_2(c *C) {
 
-	// Create an Elasticsearch client
-	client, err := Dial(elastic.SetURL(testURL))
+	// Create an Elasticsearch connection
+	connection, err := Dial(options...)
 	c.Assert(err, IsNil)
-	cl := client.Open(true)
+	cl := connection.Open(true)
 
 	result, err := cl.Get().Get().
 		Index(testIndex).
@@ -127,17 +134,18 @@ func (s *testSuite) TestClient_DebugTrue_2(c *C) {
 	c.Assert(result.Id, Equals, "one")
 }
 
-func (s *testSuite) TestClient_DebugTrue_3(c *C) {
+func (s *testSuite) TestClientDebug_3(c *C) {
 
-	// Create an Elasticsearch client
-	client, err := DialContext(context.Background(), elastic.SetURL(testURL))
+	// Create an Elasticsearch connection
+	ctx := context.Background()
+	connection, err := DialContext(ctx, options...)
 	c.Assert(err, IsNil)
-	cl := client.Open(true)
+	cl := connection.Open(true)
 
 	result, err := cl.Get().Get().
 		Index(testIndex).
 		Id("one").
-		Do(context.Background())
+		Do(ctx)
 	c.Assert(err, IsNil)
 
 	c.Assert(result.Id, Equals, "one")
@@ -149,15 +157,16 @@ func (s *testSuite) TestClient_DebugTrue_3(c *C) {
 	c.Assert(strings.HasPrefix(req, "GET /"), Equals, true)
 
 	res := string(debug.Response())
-	c.Assert(strings.HasPrefix(res, "HTTP/1.1"), Equals, true)
+	c.Assert(strings.HasPrefix(res, "HTTP/"), Equals, true)
 }
 
-func (s *testSuite) TestClient_DebugTrue_Empty(c *C) {
+func (s *testSuite) TestClientDebug_Empty(c *C) {
 
-	// Create an Elasticsearch client
-	client, err := DialContext(context.Background(), elastic.SetURL(testURL))
+	// Create an Elasticsearch connection
+	ctx := context.Background()
+	connection, err := DialContext(ctx, options...)
 	c.Assert(err, IsNil)
-	cl := client.Open(true)
+	cl := connection.Open(true)
 
 	debug := cl.Debug()
 	c.Assert(cl.Debug(), NotNil)
@@ -166,12 +175,12 @@ func (s *testSuite) TestClient_DebugTrue_Empty(c *C) {
 
 }
 
-func (s *testSuite) TestClient_DebugFalse_1(c *C) {
+func (s *testSuite) TestClient_1(c *C) {
 
-	// Create an Elasticsearch client
-	client, err := NewSimpleClient(elastic.SetURL(testURL))
+	// Create an Elasticsearch connection
+	connection, err := NewSimpleClient(options...)
 	c.Assert(err, IsNil)
-	cl := client.Open(false)
+	cl := connection.Open(false)
 
 	result, err := cl.Get().Get().
 		Index(testIndex).
