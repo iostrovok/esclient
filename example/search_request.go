@@ -11,11 +11,12 @@ import (
 	"github.com/olivere/elastic/v7"
 )
 
-var url, index, typeDoc, reqVal string
-var sortField, reqField string
-
-var countGoroutine int = 10
-var printLock sync.RWMutex
+var (
+	url, index, typeDoc, reqVal string
+	sortField, reqField         string
+	countGoroutine              = 10
+	printLock                   sync.RWMutex
+)
 
 func init() {
 
@@ -86,7 +87,7 @@ func runID(i int, wg *sync.WaitGroup, client esclient.IConn) {
 
 	for _, hit := range searchResult.Hits.Hits {
 		one := map[string]interface{}{}
-		err := json.Unmarshal(*hit.Source, &one)
+		err := json.Unmarshal(hit.Source, &one)
 		if err != nil {
 			log.Fatal(err)
 		}

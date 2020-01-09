@@ -42,7 +42,14 @@ func insertRecord(c *C, id, record string) {
 func (s *testSuite) SetUpSuite(c *C) {
 	client := &http.Client{}
 
-	req, err := http.NewRequest("PUT", testURL+"/"+testIndex, strings.NewReader(testMappings))
+	req, err := http.NewRequest("DELETE", testURL+"/"+testIndex, strings.NewReader(""))
+	c.Assert(err, IsNil)
+
+	req.Header.Add("Content-Type", "application/json")
+	_, err = client.Do(req)
+	c.Assert(err, IsNil)
+
+	req, err = http.NewRequest("PUT", testURL+"/"+testIndex, strings.NewReader(testMappings))
 	c.Assert(err, IsNil)
 
 	req.Header.Add("Content-Type", "application/json")

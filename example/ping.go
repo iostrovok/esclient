@@ -3,18 +3,20 @@ package main
 import (
 	"context"
 	"flag"
+	"log"
+	"os"
 	"sync"
 	"time"
 
 	"github.com/iostrovok/esclient"
 	"github.com/olivere/elastic/v7"
-	log "github.com/sirupsen/logrus"
 )
 
-var url, index, typeDoc, reqVal string
-
-var countGoroutine int = 10
-var printLock sync.RWMutex
+var (
+	url, index, typeDoc, reqVal string
+	countGoroutine              = 10
+	printLock                   sync.RWMutex
+)
 
 func init() {
 
@@ -43,11 +45,12 @@ func main() {
 
 	connection, err := esclient.NewClient(options...)
 	if err != nil {
+		log.Println("connection, err := esclient.NewClient(options...)")
 		log.Fatal(err)
 	}
 
 	ctx, cancel := context.WithCancel(context.Background())
-	connection.SetLogger(log.StandardLogger())
+	connection.SetLogger(log.New(os.Stderr, "INFO: ", log.Lshortfile))
 	connection.SniffTimeout(1 * time.Second)
 	connection.Sniff(ctx)
 

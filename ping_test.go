@@ -2,11 +2,12 @@ package esclient
 
 import (
 	"context"
+	"log"
+	"os"
 	"time"
 
 	. "github.com/iostrovok/check"
 	"github.com/olivere/elastic/v7"
-	log "github.com/sirupsen/logrus"
 )
 
 // TestExtractURLs
@@ -28,7 +29,7 @@ func (s *testSuite) TestSniff(c *C) {
 	connection, err := NewSimpleClient(elastic.SetURL(testURL, "https://vpc-clutchapi-ci-es-71-u7jh37rbusbbv2xrtds65tylg4.us-east-1.es.amazonaws.com"))
 	c.Assert(err, IsNil)
 
-	connection.SetLogger(log.New())
+	connection.SetLogger(log.New(os.Stderr, "INFO: ", log.Lshortfile))
 
 	connection.Sniff(context.Background())
 	time.Sleep(20 * time.Second)

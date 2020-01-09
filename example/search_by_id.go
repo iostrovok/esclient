@@ -10,10 +10,11 @@ import (
 	"github.com/olivere/elastic/v7"
 )
 
-var url, index, typeDoc, reqVal string
-
-var countGoroutine int = 10
-var printLock sync.RWMutex
+var (
+	url, index, typeDoc, reqVal string
+	countGoroutine              = 10
+	printLock                   sync.RWMutex
+)
 
 func init() {
 

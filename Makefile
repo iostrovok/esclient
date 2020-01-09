@@ -17,9 +17,6 @@ test-cover:
 test-tc:
 	$(DIR) $(GODEBUG) go test --check.format=teamcity -race ./
 
-test:
-	$(DIR) $(GODEBUG) go test -cover -race ./
-
 clean:
 	rm -f coverage.out
 	rm -fr ./vendor
