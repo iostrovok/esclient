@@ -50,3 +50,5 @@ _testmain.go
 /test
 /CHANGELOG-3.0.html
 /coverage.html
+.DS_Store
+
