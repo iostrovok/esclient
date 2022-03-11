@@ -4,7 +4,7 @@ go 1.17
 
 require (
 	github.com/iostrovok/check v0.0.13
-	github.com/olivere/elastic/v7 v7.0.31
+	github.com/olivere/elastic/v7 v7.0.29
 )
 
 require (
