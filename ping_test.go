@@ -2,17 +2,11 @@ package esclient
 
 import (
 	"context"
-	"log"
-	"os"
 	"time"
-
-	. "github.com/iostrovok/check"
-	"github.com/olivere/elastic/v7"
 )
 
 // TestExtractURLs
 func (s *testSuite) TestExtractURLs(c *C) {
-
 	line := "https://vpc.us-east-1.es.amazonaws.com [dead=false,failures=0,deadSince=<nil>], http://127.0.0.1:9200 [dead=false,failures=0,deadSince=<nil>]"
 	urls := extractURLs(line)
 
@@ -23,20 +17,7 @@ func (s *testSuite) TestExtractURLs(c *C) {
 	c.Assert(urls, DeepEquals, checkList)
 }
 
-func (s *testSuite) TestSniff(c *C) {
-
-	// Create an Elasticsearch connection
-	connection, err := NewSimpleClient(elastic.SetURL(testURL, "https://vpc-clutchapi-ci-es-71-u7jh37rbusbbv2xrtds65tylg4.us-east-1.es.amazonaws.com"))
-	c.Assert(err, IsNil)
-
-	connection.SetLogger(log.New(os.Stderr, "INFO: ", log.Lshortfile))
-
-	connection.Sniff(context.Background())
-	time.Sleep(20 * time.Second)
-}
-
 func (s *testSuite) TestReConnect_1(c *C) {
-
 	// Create an Elasticsearch connection
 	connection, err := NewSimpleClient(options...)
 	c.Assert(err, IsNil)
