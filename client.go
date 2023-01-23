@@ -2,6 +2,7 @@ package esclient
 
 import (
 	"context"
+
 	"github.com/olivere/elastic/v7"
 )
 
@@ -51,7 +52,6 @@ func (c *conn) Open(useDebug bool, ctxs ...context.Context) IClient {
 }
 
 func (c *conn) newDebugClient(ctxs ...context.Context) IClient {
-
 	debugObject, httpClient := makeHttpClient()
 
 	options := append(c.options,

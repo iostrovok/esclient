@@ -7,7 +7,7 @@ import (
 type ReqHandler func(*http.Request)
 type ResHandler func(*http.Response, error) (*http.Response, error)
 
-var supportedMethods map[string]bool = map[string]bool{
+var supportedMethods = map[string]bool{
 	http.MethodGet:  true,
 	http.MethodPost: true,
 	http.MethodPut:  true,
@@ -39,7 +39,6 @@ type RoundTripper struct {
 }
 
 func (r RoundTripper) RoundTrip(request *http.Request) (*http.Response, error) {
-
 	if !supportedMethods[request.Method] {
 		r.httpRoundTripper.RoundTrip(request)
 	}
@@ -57,7 +56,6 @@ func (r RoundTripper) RoundTrip(request *http.Request) (*http.Response, error) {
 
 // httpClient prepares instance of http client
 func httpClient(reqFunc ReqHandler, resFunc ResHandler) *http.Client {
-
 	rt := RoundTripper{
 		httpRoundTripper: &http.Transport{},
 		ReqFunc:          reqFunc,

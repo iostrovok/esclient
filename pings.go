@@ -133,7 +133,6 @@ func (c *conn) checkConnections(ctx context.Context) {
 }
 
 func (c *conn) reConnect() error {
-
 	c.Printf("Reconnect.....")
 
 	var es *elastic.Client

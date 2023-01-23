@@ -3,6 +3,9 @@ package esclient
 import (
 	"context"
 	"time"
+
+	. "github.com/iostrovok/check"
+	"github.com/olivere/elastic/v7"
 )
 
 // TestExtractURLs
@@ -54,7 +57,6 @@ func (s *testSuite) TestReConnect_1(c *C) {
 }
 
 func (s *testSuite) TestReConnect_2(c *C) {
-
 	connection, err := NewSimpleClient(elastic.SetURL("bla-bla-bla"))
 	c.Assert(err, NotNil)
 	connection.SniffTimeout(1 * time.Second)
