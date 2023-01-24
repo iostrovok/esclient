@@ -14,10 +14,10 @@ type ILogger interface {
 }
 
 type IDebug interface {
-	// Request() returns full http request
+	// Request  returns full http request
 	Request() []byte
 
-	// Response() returns full http response
+	// Response returns full http response
 	Response() []byte
 }
 
@@ -26,6 +26,9 @@ type IConn interface {
 	Sniff(context.Context)
 	SetLogger(ILogger)
 	SniffTimeout(time.Duration)
+
+	// SetCustomHandler is a setter
+	SetCustomHandler(ReqHandler, ResHandler) error
 
 	// internal
 	reConnect() error

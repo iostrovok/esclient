@@ -24,6 +24,10 @@ type conn struct {
 	logger        ILogger
 	loggerSet     bool
 	sniffDuration time.Duration
+
+	// custom savers
+	responseHandler ResHandler
+	requestHandler  ReqHandler
 }
 
 func newConn(c ConnectionType, options []elastic.ClientOptionFunc, es *elastic.Client, err error, ctx context.Context) *conn {
@@ -59,6 +63,12 @@ func extractURLs(line string) []string {
 	return out
 }
 
+func (c *conn) SetCustomHandler(req ReqHandler, res ResHandler) error {
+	c.requestHandler = req
+	c.responseHandler = res
+	return c.reConnect()
+}
+
 func (c *conn) SetLogger(logger ILogger) {
 	c.logger = logger
 	c.loggerSet = true
@@ -89,7 +99,6 @@ func (c *conn) SniffTimeout(duration time.Duration) {
 }
 
 func (c *conn) Sniff(ctx context.Context) {
-
 	if c.firstElasticClient == nil {
 		return
 	}
@@ -100,11 +109,10 @@ func (c *conn) Sniff(ctx context.Context) {
 		c.pingService = append(c.pingService, c.firstElasticClient.Ping(url))
 	}
 
-	go c.run(ctx)
+	go c.runSniff(ctx)
 }
 
-func (c *conn) run(ctx context.Context) {
-
+func (c *conn) runSniff(ctx context.Context) {
 	// sleep before first attempt
 	time.Sleep(c.sniffDuration)
 
@@ -133,20 +141,24 @@ func (c *conn) checkConnections(ctx context.Context) {
 }
 
 func (c *conn) reConnect() error {
-	c.Printf("Reconnect.....")
-
 	var es *elastic.Client
 	var err error
 
+	options := c.options
+	if c.responseHandler != nil || c.requestHandler != nil {
+		httpClient := httpClientCustom(c.requestHandler, c.responseHandler)
+		options = append(options, elastic.SetHttpClient(httpClient))
+	}
+
 	switch c.connectionType {
 	case ClientType:
-		es, err = elastic.NewClient(c.options...)
+		es, err = elastic.NewClient(options...)
 	case DialContextType:
-		es, err = elastic.DialContext(c.ctx, c.options...)
+		es, err = elastic.DialContext(c.ctx, options...)
 	case DialType:
-		es, err = elastic.Dial(c.options...)
+		es, err = elastic.Dial(options...)
 	case SimpleType:
-		es, err = elastic.NewSimpleClient(c.options...)
+		es, err = elastic.NewSimpleClient(options...)
 	}
 
 	if err == nil {

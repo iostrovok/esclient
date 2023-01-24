@@ -24,7 +24,7 @@ func (s *testSuite) TestReConnect_1(c *C) {
 	// Create an Elasticsearch connection
 	connection, err := NewSimpleClient(options...)
 	c.Assert(err, IsNil)
-	cl := connection.Open(false)
+	cl := connection.Open(false, context.Background())
 
 	result, err := cl.Get().Get().
 		Index(testIndex).
@@ -46,7 +46,7 @@ func (s *testSuite) TestReConnect_1(c *C) {
 	err = connection.reConnect()
 	c.Assert(err, IsNil)
 
-	cl = connection.Open(false)
+	cl = connection.Open(false, context.Background())
 	result, err = cl.Get().Get().
 		Index(testIndex).
 		Id("one").
