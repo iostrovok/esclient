@@ -19,7 +19,7 @@ type conn struct {
 	firstElasticClient *elastic.Client
 	connectionError    error
 	ctx                context.Context
-	pingService        []*elastic.PingService
+	pingService        *pingService
 
 	logger        ILogger
 	loggerSet     bool
@@ -64,8 +64,11 @@ func extractURLs(line string) []string {
 }
 
 func (c *conn) SetCustomHandler(req ReqHandler, res ResHandler) error {
+	c.mc.Lock()
 	c.requestHandler = req
 	c.responseHandler = res
+	c.mc.Unlock()
+
 	return c.reConnect()
 }
 
@@ -95,6 +98,7 @@ func (c *conn) Printf(format string, v ...interface{}) {
 func (c *conn) SniffTimeout(duration time.Duration) {
 	c.mc.Lock()
 	defer c.mc.Unlock()
+
 	c.sniffDuration = duration
 }
 
@@ -103,44 +107,22 @@ func (c *conn) Sniff(ctx context.Context) {
 		return
 	}
 
-	c.pingService = make([]*elastic.PingService, 0)
+	c.pingService = newPingService(c.sniffDuration, c.reConnect, c.Printf)
+	c.mc.RLock()
 	urls := extractURLs(c.firstElasticClient.String())
+	c.mc.RUnlock()
+
 	for _, url := range urls {
-		c.pingService = append(c.pingService, c.firstElasticClient.Ping(url))
+		c.pingService.Add(c.firstElasticClient.Ping(url))
 	}
 
-	go c.runSniff(ctx)
-}
-
-func (c *conn) runSniff(ctx context.Context) {
-	// sleep before first attempt
-	time.Sleep(c.sniffDuration)
-
-	for {
-		select {
-		case <-ctx.Done():
-			return
-		case <-time.After(c.sniffDuration):
-			c.checkConnections(ctx)
-		}
-	}
-}
-
-func (c *conn) checkConnections(ctx context.Context) {
-	c.mc.Lock()
-	defer c.mc.Unlock()
-
-	for i := range c.pingService {
-		_, statusCode, err := c.pingService[i].Do(ctx)
-		if err != nil || statusCode < 200 || statusCode >= 300 {
-			c.Printf("Reconnect statusCode: %d. err: %v. res: %v", statusCode, err)
-			c.reConnect()
-			return
-		}
-	}
+	go c.pingService.runSniff(ctx)
 }
 
 func (c *conn) reConnect() error {
+	c.mc.Lock()
+	defer c.mc.Unlock()
+
 	var es *elastic.Client
 	var err error
 
