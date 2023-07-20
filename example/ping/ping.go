@@ -8,14 +8,15 @@ import (
 	"sync"
 	"time"
 
-	"github.com/iostrovok/esclient"
 	"github.com/olivere/elastic/v7"
+
+	"github.com/iostrovok/esclient"
 )
 
 var (
-	url, index, typeDoc, reqVal string
-	countGoroutine              = 10
-	printLock                   sync.RWMutex
+	url, index, id string
+	countGoroutine = 10
+	printLock      sync.RWMutex
 )
 
 func init() {
@@ -24,8 +25,7 @@ func init() {
 
 	flag.StringVar(&url, "url", "", "Elasticsearch URL")
 	flag.StringVar(&index, "index", "", "Elasticsearch index")
-	flag.StringVar(&typeDoc, "type", "", "Elasticsearch type")
-	flag.StringVar(&reqVal, "req", "", "Searching data or id")
+	flag.StringVar(&id, "id", "", "Searching id")
 
 	flag.Parse()
 }
@@ -36,6 +36,10 @@ func InitClient(url []string, user, password string) {
 }
 
 func main() {
+	log.Printf("Start with:\n")
+	log.Printf("url: %s\n", url)
+	log.Printf("index: %s\n", index)
+	log.Printf("id: %s\n\n", id)
 
 	options := []elastic.ClientOptionFunc{
 		elastic.SetURL(url),
@@ -65,13 +69,11 @@ func main() {
 }
 
 func runID(i int, client esclient.IConn) {
-
 	cl := client.Open(true)
 
 	result, err := cl.Get().Get().
 		Index(index).
-		Type(typeDoc).
-		Id(reqVal).
+		Id(id).
 		Do(context.Background())
 
 	// We don't want to mash several outputs for readability.

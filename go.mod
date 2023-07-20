@@ -3,8 +3,8 @@ module github.com/iostrovok/esclient
 go 1.17
 
 require (
-	github.com/iostrovok/check v0.0.13
-	github.com/olivere/elastic/v7 v7.0.31
+	github.com/iostrovok/check v0.0.14
+	github.com/olivere/elastic/v7 v7.0.32
 )
 
 require (

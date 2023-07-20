@@ -2,16 +2,19 @@ package main
 
 import (
 	"context"
+	"encoding/json"
 	"flag"
 	"log"
 	"sync"
 
-	"github.com/iostrovok/esclient"
 	"github.com/olivere/elastic/v7"
+
+	"github.com/iostrovok/esclient"
 )
 
 var (
 	url, index, typeDoc, reqVal string
+	sortField, reqField         string
 	countGoroutine              = 10
 	printLock                   sync.RWMutex
 )
@@ -26,6 +29,8 @@ func init() {
 	flag.StringVar(&index, "index", "", "Elasticsearch index")
 	flag.StringVar(&typeDoc, "type", "", "Elasticsearch type")
 	flag.StringVar(&reqVal, "req", "", "Searching data or id")
+	flag.StringVar(&sortField, "sort", "", "Sorting field")
+	flag.StringVar(&reqField, "field", "", "Searching field")
 
 	flag.Parse()
 }
@@ -33,7 +38,7 @@ func init() {
 func main() {
 
 	// Create an Elasticsearch client
-	client, err := esclient.NewSimpleClient(elastic.SetURL(url))
+	client, err := esclient.Dial(elastic.SetURL(url), elastic.SetSniff(false))
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -52,12 +57,19 @@ func runID(i int, wg *sync.WaitGroup, client esclient.IConn) {
 
 	defer wg.Done()
 
-	cl := client.Open(true)
+	cl := client.Open(true, context.Background())
 
-	result, err := cl.Get().Get().
+	q := elastic.NewMatchQuery(reqField, reqVal)
+	sortBy := elastic.SortInfo{
+		Field:     sortField,
+		Ascending: true,
+	}
+	searchResult, err := cl.Get().Search().
 		Index(index).
 		Type(typeDoc).
-		Id(reqVal).
+		Query(q).
+		SortWithInfo(sortBy).
+		Size(1).
 		Do(context.Background())
 
 	// We don't want to mash several outputs for readability.
@@ -74,8 +86,14 @@ func runID(i int, wg *sync.WaitGroup, client esclient.IConn) {
 		return
 	}
 
-	if result.Found {
-		log.Printf("Got document %s in version %d from index %s, type %s\n", result.Id, result.Version, result.Index, result.Type)
+	for _, hit := range searchResult.Hits.Hits {
+		one := map[string]interface{}{}
+		err := json.Unmarshal(hit.Source, &one)
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		log.Println(one)
 	}
 
 	log.Println("Finished succeeded")

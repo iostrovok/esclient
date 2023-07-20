@@ -25,7 +25,7 @@ var _ = Suite(&testSuite{})
 
 func TestService(t *testing.T) { TestingT(t) }
 
-//Run once when the suite starts running.
+// Run once when the suite starts running.
 func insertRecord(c *C, id, record string) {
 
 	client := &http.Client{}
@@ -38,7 +38,7 @@ func insertRecord(c *C, id, record string) {
 	c.Assert(err, IsNil)
 }
 
-//Run once when the suite starts running.
+// Run once when the suite starts running.
 func (s *testSuite) SetUpSuite(c *C) {
 	client := &http.Client{}
 
@@ -77,13 +77,13 @@ func (s *testSuite) SetUpSuite(c *C) {
 	}
 }
 
-//Run before each test or benchmark starts running.
+// Run before each test or benchmark starts running.
 func (s *testSuite) SetUpTest(c *C) {}
 
-//Run after each test or benchmark runs.
+// Run after each test or benchmark runs.
 func (s *testSuite) TearDownTest(c *C) {}
 
-//Run once after all tests or benchmarks have finished running.
+// Run once after all tests or benchmarks have finished running.
 func (s *testSuite) TearDownSuite(c *C) {
 	client := &http.Client{}
 
@@ -95,17 +95,17 @@ func (s *testSuite) TearDownSuite(c *C) {
 	c.Assert(err, IsNil)
 }
 
-//// TestErrorHandler_NoSuchIndex
+// // TestErrorHandler_NoSuchIndex
 func (s *testSuite) TestConnectionError(c *C) {
 
 	connection, err := NewClient(elastic.SetURL("bla-bla-bla"))
 	c.Assert(err, NotNil)
 	c.Assert(connection, NotNil)
 
-	cl := connection.Open(true)
+	cl := connection.Open(true, context.Background())
 	c.Assert(cl.Error(), NotNil)
 
-	cl = connection.Open(false)
+	cl = connection.Open(false, context.Background())
 	c.Assert(cl.Error(), NotNil)
 }
 
@@ -114,7 +114,7 @@ func (s *testSuite) TestClientDebug_1(c *C) {
 	// Create an Elasticsearch connection
 	connection, err := NewSimpleClient(options...)
 	c.Assert(err, IsNil)
-	cl := connection.Open(true)
+	cl := connection.Open(true, context.Background())
 
 	result, err := cl.Get().Get().
 		Index(testIndex).
@@ -130,7 +130,7 @@ func (s *testSuite) TestClientDebug_2(c *C) {
 	// Create an Elasticsearch connection
 	connection, err := Dial(options...)
 	c.Assert(err, IsNil)
-	cl := connection.Open(true)
+	cl := connection.Open(true, context.Background())
 
 	result, err := cl.Get().Get().
 		Index(testIndex).
@@ -147,7 +147,7 @@ func (s *testSuite) TestClientDebug_3(c *C) {
 	ctx := context.Background()
 	connection, err := DialContext(ctx, options...)
 	c.Assert(err, IsNil)
-	cl := connection.Open(true)
+	cl := connection.Open(true, context.Background())
 
 	result, err := cl.Get().Get().
 		Index(testIndex).
@@ -173,7 +173,7 @@ func (s *testSuite) TestClientDebug_Empty(c *C) {
 	ctx := context.Background()
 	connection, err := DialContext(ctx, options...)
 	c.Assert(err, IsNil)
-	cl := connection.Open(true)
+	cl := connection.Open(true, context.Background())
 
 	debug := cl.Debug()
 	c.Assert(cl.Debug(), NotNil)
@@ -187,7 +187,7 @@ func (s *testSuite) TestClient_1(c *C) {
 	// Create an Elasticsearch connection
 	connection, err := NewSimpleClient(options...)
 	c.Assert(err, IsNil)
-	cl := connection.Open(false)
+	cl := connection.Open(false, context.Background())
 
 	result, err := cl.Get().Get().
 		Index(testIndex).

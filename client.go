@@ -2,6 +2,7 @@ package esclient
 
 import (
 	"context"
+
 	"github.com/olivere/elastic/v7"
 )
 
@@ -51,8 +52,7 @@ func (c *conn) Open(useDebug bool, ctxs ...context.Context) IClient {
 }
 
 func (c *conn) newDebugClient(ctxs ...context.Context) IClient {
-
-	debugObject, httpClient := makeHttpClient()
+	debugObject, httpClient := makeHttpClient(c.requestHandler, c.responseHandler)
 
 	options := append(c.options,
 		elastic.SetHttpClient(httpClient),
@@ -68,7 +68,9 @@ func (c *conn) newDebugClient(ctxs ...context.Context) IClient {
 	case ClientType:
 		es, err = elastic.NewClient(options...)
 	case DialContextType:
-		ctxs = append(ctxs, context.Background())
+		if len(ctxs) == 0 {
+			ctxs = append(ctxs, context.Background())
+		}
 		es, err = elastic.DialContext(ctxs[0], options...)
 	case DialType:
 		es, err = elastic.Dial(options...)

@@ -14,8 +14,8 @@ test-cover:
 	go tool cover -html=coverage.out -o coverage.html
 	rm coverage.out
 
-test-tc:
-	$(DIR) $(GODEBUG) go test --check.format=teamcity -race ./
+test:
+	$(DIR) $(GODEBUG) go test -race ./
 
 clean:
 	rm -f coverage.out
