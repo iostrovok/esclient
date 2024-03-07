@@ -48,6 +48,9 @@ func (c *conn) Open(useDebug bool, ctxs ...context.Context) IClient {
 		return c.newDebugClient(ctxs...)
 	}
 
+	c.mc.RLock()
+	defer c.mc.RUnlock()
+
 	return newClient(c.firstElasticClient, c.connectionError, newDebugHandler())
 }
 
